@@ -1,57 +1,131 @@
-// Signup
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const userModel = require("../model/user_model");
 
-exports.signup = async (req,res)=>{
-    app.post('/signup', function(req,res){
-        const {email,password,name,age,username} = req.body
-            bcrypt.genSalt(10,(err,salt)=>{
-                bcrypt.hash(password,salt,async(err,hash)=>{
-                     let createdUser = await userModel.create({
-                     username,
-                     email,
-                     password:hash,
-                     name:name,
-                     age
-                    })
-                    res.send(createdUser)
-                })
-            })
-    });
-}
+// Signup Controller
+exports.signup = async (req, res) => {
+    try {
 
-//Signup
+        const { email, password, name, age, username } = req.body;
 
-exports.signin = async (req,res)=>{
-    app.post('/signin',async(req,res)=>{
-        const {email,password,username} = req.body;
-        let user = await userModel.findOne({email});
-        if(!user){
-            res.send('user not found');
-            console.log('user not found');
-        }
-        else{
-            bcrypt.compare(password,user.password,(err,result)=>{
-                if(result){
-                    const token = jwt.sign({email,username},"shhhhhhh");
-                    res.cookie("token",token);
-                    res.send('user signed in successfully!');
+        bcrypt.genSalt(10, (err, salt) => {
+
+            if (err) {
+                return res.status(500).json({
+                    success: false,
+                    message: "Error generating salt"
+                });
+            }
+
+            bcrypt.hash(password, salt, async (err, hash) => {
+
+                if (err) {
+                    return res.status(500).json({
+                        success: false,
+                        message: "Error hashing password"
+                    });
                 }
-                else{
-                    res.send('password is incorrect');
-                    console.log('password is incorrect');
-                }
-            })
+
+                const createdUser = await userModel.create({
+                    username,
+                    email,
+                    password: hash,
+                    name,
+                    age
+                });
+
+                res.status(201).json({
+                    success: true,
+                    message: "User created successfully",
+                    user: createdUser
+                });
+
+            });
+
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+
+    }
+};
+
+// Login Controller
+exports.login = async (req, res) => {
+
+    try {
+
+        const { email, password } = req.body;
+
+        const user = await userModel.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
         }
+
+        bcrypt.compare(password, user.password, (err, result) => {
+
+            if (err) {
+                return res.status(500).json({
+                    success: false,
+                    message: "Error comparing password"
+                });
+            }
+
+            if (!result) {
+                return res.status(401).json({
+                    success: false,
+                    message: "Invalid credentials"
+                });
+            }
+
+            const token = jwt.sign(
+                {
+                    email: user.email,
+                    username: user.username
+                },
+                "shhhhhhh"
+            );
+
+            res.cookie("token", token);
+
+            res.status(200).json({
+                success: true,
+                message: "User logged in successfully"
+            });
+
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+
+    }
+
+};
+
+// Logout Controller
+exports.logout = (req, res) => {
+
+    res.clearCookie("token");
+
+    res.status(200).json({
+        success: true,
+        message: "Logged out successfully"
     });
-}
 
-//Logout
-
-exports.logout = async (req,res)=>{
-
-}
-
-//Profile
-
-exports.profile = async (req,res)=>{
-
-}
+};
