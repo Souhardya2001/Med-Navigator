@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const userModel = require("../model/user_model");
 
 // Signup Controller
+
 exports.signup = async (req, res) => {
     try {
 
@@ -57,11 +58,12 @@ exports.signup = async (req, res) => {
 };
 
 // Login Controller
+
 exports.login = async (req, res) => {
 
     try {
 
-        const { email, password } = req.body;
+        const { email, password, username } = req.body;
 
         const user = await userModel.findOne({ email });
 
@@ -119,6 +121,7 @@ exports.login = async (req, res) => {
 };
 
 // Logout Controller
+
 exports.logout = (req, res) => {
 
     res.clearCookie("token");
