@@ -1,0 +1,61 @@
+const jwt = require("jsonwebtoken");
+const jwtConfig = require("../config/jwt");
+const generateAccessToken = require("../utils/generateAccessToken");
+const userModel = require("../model/user_model");
+
+const isLoggedIn = async (req, res, next) => {
+  try {
+    const accessToken = req.cookies.accessToken;
+    const refershToken = req.cookies.refershToken;
+
+    //No tokens found
+    if (!accessToken && !refershToken) {
+      // oreturn res.redirect("/login");
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    // accessToken exists
+    if (accessToken) {
+      try {
+        const decoded = jwt.verify(accessToken, jwtConbfig.access_token_secret);
+        req.user = decoded;
+
+        return next();
+      } catch (error) {
+
+        // If access token is invalid for reasons other than expiry
+        if (error.name !== "TokenExpiredError") {
+          // return logout(req,res);
+        }
+      }
+    }
+
+    // accessToken doesn't exist and refreshToken exists
+    if (refreshToken) {
+      try {
+        const decoded = jwt.verify(refershToken, jwtConfig.refershToken_secret);
+        const user = await userModel.findById(decoded.id);
+        const accessToken = generateAccessToken(user);
+        res.cookie("accessToken", accessToken, {
+          httpOnly: true,
+          sameSite: "lax",
+          maxAge: 15 * 60 * 1000,
+        });
+      } catch (error) {
+
+        //   return logout(req, res);
+      }
+    }
+    // return logout(req, res);
+  } catch (error) {
+    return res.status(401).json({
+      success: false,
+      message: "Invalid Token",
+    });
+  }
+};
+
+module.exports = isLoggedIn;

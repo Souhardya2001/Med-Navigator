@@ -1,12 +1,22 @@
 const express = require('express');
 const app = express();
+require("dotenv").config({
+    path: "../.env"
+});
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
 const path = require('path');
 const bcrypt = require('bcrypt');
-const PORT = 8000;
 const userModel = require('./model/user_model');
 const authController = require('./controllers/authController');
+const authRoutes = require('./routes/authRoutes');
+const connectDB = require('./config/db');
+const PORT = process.env.PORT;
+
+//Connect to Database
+connectDB();
+ 
+
 // Middlewares
 
 app.use(express.json());
@@ -15,23 +25,7 @@ app.use(cookieParser());
 app.use(express.urlencoded({extended:true}));
 
 
-function isLoggedIn(req,res,next){
-   try {
-    let data = jwt.verify(req.cookies.token, "shhhhhhh");
-    req.user = data;
-    console.log(data);
-} catch (err) {
-    console.log(err);
-    return res.redirect('/login');
-}
-    next();
-}
-
-
-
-app.post('/create', authController.signup);
-app.post('/login',authController.login);
-app.get('/logout',authController.logout);
+app.use('/api/auth', authRoutes);
 
 
 app.listen(PORT,()=>{

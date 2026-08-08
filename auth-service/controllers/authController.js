@@ -1,9 +1,9 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const userModel = require("../model/user_model");
+const generateAccessToken = require("../utils/generateAccessToken");
 
 // Signup Controller
-
 exports.signup = async (req, res) => {
     try {
 
@@ -89,16 +89,29 @@ exports.login = async (req, res) => {
                     message: "Invalid credentials"
                 });
             }
+            // Getting accessToken and refreshToken
 
-            const token = jwt.sign(
+            const accessToken = generateAccessToken(user);
+            const refreshToken = generateRefreshToken(user);
+        
+            // Setting cookies for accessToken and refreshToken
+
+            res.cookie("accessToken", accessToken,
                 {
-                    email: user.email,
-                    username: user.username
-                },
-                "shhhhhhh"
-            );
+                    httpOnly:true,
+                    sameSite: "lax",
+                    maxAge: 15 * 60 * 1000
 
-            res.cookie("token", token);
+                 }
+        );
+        
+        res.cookie("refershToken", refershToken,
+            {
+                httpOnly: true,
+                sameSite: "lax",
+                maxAge: 7 * 24 * 60 * 60 * 1000
+            }
+        );
 
             res.status(200).json({
                 success: true,
@@ -124,9 +137,10 @@ exports.login = async (req, res) => {
 
 exports.logout = (req, res) => {
 
-    res.clearCookie("token");
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
 
-    res.status(200).json({
+    return res.status(200).json({
         success: true,
         message: "Logged out successfully"
     });
