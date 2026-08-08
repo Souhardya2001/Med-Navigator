@@ -10,7 +10,7 @@ const isLoggedIn = async (req, res, next) => {
 
     //No tokens found
     if (!accessToken && !refershToken) {
-      // oreturn res.redirect("/login");
+      // return res.redirect("/login");
       return res.status(401).json({
         success: false,
         message: "Unauthorized",
@@ -22,7 +22,6 @@ const isLoggedIn = async (req, res, next) => {
       try {
         const decoded = jwt.verify(accessToken, jwtConbfig.access_token_secret);
         req.user = decoded;
-
         return next();
       } catch (error) {
 
@@ -37,13 +36,19 @@ const isLoggedIn = async (req, res, next) => {
     if (refreshToken) {
       try {
         const decoded = jwt.verify(refershToken, jwtConfig.refershToken_secret);
+
         const user = await userModel.findById(decoded.id);
+        if(!user){
+            // return logout(req,res);
+        }
         const accessToken = generateAccessToken(user);
         res.cookie("accessToken", accessToken, {
           httpOnly: true,
           sameSite: "lax",
           maxAge: 15 * 60 * 1000,
         });
+        req.user = decoded;
+        return next();
       } catch (error) {
 
         //   return logout(req, res);
