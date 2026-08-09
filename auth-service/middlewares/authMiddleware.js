@@ -6,10 +6,10 @@ const userModel = require("../model/user_model");
 const isLoggedIn = async (req, res, next) => {
   try {
     const accessToken = req.cookies.accessToken;
-    const refershToken = req.cookies.refershToken;
+    const refreshToken = req.cookies.refreshToken;
 
     //No tokens found
-    if (!accessToken && !refershToken) {
+    if (!accessToken && !refreshToken) {
       // return res.redirect("/login");
       return res.status(401).json({
         success: false,
@@ -35,7 +35,7 @@ const isLoggedIn = async (req, res, next) => {
     // accessToken doesn't exist and refreshToken exists
     if (refreshToken) {
       try {
-        const decoded = jwt.verify(refershToken, jwtConfig.refershToken_secret);
+        const decoded = jwt.verify(refreshToken, jwtConfig.refresh_secret);
 
         const user = await userModel.findById(decoded.id);
         if(!user){
@@ -45,7 +45,7 @@ const isLoggedIn = async (req, res, next) => {
         res.cookie("accessToken", accessToken, {
           httpOnly: true,
           sameSite: "lax",
-          maxAge: 15 * 60 * 1000,
+          maxAge: 1 * 60 * 1000,
         });
         req.user = decoded;
         return next();

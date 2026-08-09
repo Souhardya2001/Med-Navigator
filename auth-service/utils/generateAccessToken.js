@@ -18,4 +18,4 @@ const generateAccessToken = (user) => {
 
 };
 
-module.exports = generateToken;
+module.exports = generateAccessToken;

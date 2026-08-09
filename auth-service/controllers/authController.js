@@ -2,7 +2,8 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const userModel = require("../model/user_model");
 const generateAccessToken = require("../utils/generateAccessToken");
-
+const generateRefreshToken = require("../utils/generateRefreshToken")
+const isSessionExists = require("../middleWares/authMiddleware");
 // Signup Controller
 exports.signup = async (req, res) => {
     try {
@@ -105,7 +106,7 @@ exports.login = async (req, res) => {
                  }
         );
         
-        res.cookie("refershToken", refershToken,
+        res.cookie("refreshToken", refreshToken,
             {
                 httpOnly: true,
                 sameSite: "lax",
@@ -146,3 +147,9 @@ exports.logout = (req, res) => {
     });
 
 };
+
+exports.profile = (req,res) => {
+    res.json({
+        message: "Hi, profile is logged in!"
+    });
+}
