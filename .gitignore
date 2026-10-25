@@ -1,2 +1,28 @@
-**/node_modules/
+# Environment files and secrets
 .env
+.env.*
+!.env.example
+
+# Node.js dependencies
+node_modules/
+
+# Python virtual environments
+.venv/
+venv/
+
+# Python caches
+__pycache__/
+*.py[cod]
+
+# Logs
+*.log
+
+# Build and test output
+dist/
+build/
+coverage/
+.pytest_cache/
+
+# OS files
+.DS_Store
+Thumbs.db
